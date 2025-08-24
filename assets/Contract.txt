@@ -1,0 +1,736 @@
+/**
+ *Submitted for verification at polygonscan.com on 2025-06-04
+*/
+
+/**
+ *Submitted for verification at polygonscan.com on 2025-06-03
+*/
+
+// File: @openzeppelin/contracts/token/ERC20/IERC20.sol
+
+
+// OpenZeppelin Contracts (last updated v5.1.0) (token/ERC20/IERC20.sol)
+
+pragma solidity ^0.8.20;
+
+/**
+ * @dev Interface of the ERC-20 standard as defined in the ERC.
+ */
+interface IERC20 {
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+     * a call to {approve}. `value` is the new allowance.
+     */
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
+    /**
+     * @dev Returns the value of tokens in existence.
+     */
+    function totalSupply() external view returns (uint256);
+
+    /**
+     * @dev Returns the value of tokens owned by `account`.
+     */
+    function balanceOf(address account) external view returns (uint256);
+
+    /**
+     * @dev Moves a `value` amount of tokens from the caller's account to `to`.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transfer(address to, uint256 value) external returns (bool);
+
+    /**
+     * @dev Returns the remaining number of tokens that `spender` will be
+     * allowed to spend on behalf of `owner` through {transferFrom}. This is
+     * zero by default.
+     *
+     * This value changes when {approve} or {transferFrom} are called.
+     */
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    /**
+     * @dev Sets a `value` amount of tokens as the allowance of `spender` over the
+     * caller's tokens.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * IMPORTANT: Beware that changing an allowance with this method brings the risk
+     * that someone may use both the old and the new allowance by unfortunate
+     * transaction ordering. One possible solution to mitigate this race
+     * condition is to first reduce the spender's allowance to 0 and set the
+     * desired value afterwards:
+     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     *
+     * Emits an {Approval} event.
+     */
+    function approve(address spender, uint256 value) external returns (bool);
+
+    /**
+     * @dev Moves a `value` amount of tokens from `from` to `to` using the
+     * allowance mechanism. `value` is then deducted from the caller's
+     * allowance.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(address from, address to, uint256 value) external returns (bool);
+}
+
+// File: @openzeppelin/contracts/utils/ReentrancyGuard.sol
+
+
+// OpenZeppelin Contracts (last updated v5.1.0) (utils/ReentrancyGuard.sol)
+
+pragma solidity ^0.8.20;
+
+/**
+ * @dev Contract module that helps prevent reentrant calls to a function.
+ *
+ * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
+ * available, which can be applied to functions to make sure there are no nested
+ * (reentrant) calls to them.
+ *
+ * Note that because there is a single `nonReentrant` guard, functions marked as
+ * `nonReentrant` may not call one another. This can be worked around by making
+ * those functions `private`, and then adding `external` `nonReentrant` entry
+ * points to them.
+ *
+ * TIP: If EIP-1153 (transient storage) is available on the chain you're deploying at,
+ * consider using {ReentrancyGuardTransient} instead.
+ *
+ * TIP: If you would like to learn more about reentrancy and alternative ways
+ * to protect against it, check out our blog post
+ * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
+ */
+abstract contract ReentrancyGuard {
+    // Booleans are more expensive than uint256 or any type that takes up a full
+    // word because each write operation emits an extra SLOAD to first read the
+    // slot's contents, replace the bits taken up by the boolean, and then write
+    // back. This is the compiler's defense against contract upgrades and
+    // pointer aliasing, and it cannot be disabled.
+
+    // The values being non-zero value makes deployment a bit more expensive,
+    // but in exchange the refund on every call to nonReentrant will be lower in
+    // amount. Since refunds are capped to a percentage of the total
+    // transaction's gas, it is best to keep them low in cases like this one, to
+    // increase the likelihood of the full refund coming into effect.
+    uint256 private constant NOT_ENTERED = 1;
+    uint256 private constant ENTERED = 2;
+
+    uint256 private _status;
+
+    /**
+     * @dev Unauthorized reentrant call.
+     */
+    error ReentrancyGuardReentrantCall();
+
+    constructor() {
+        _status = NOT_ENTERED;
+    }
+
+    /**
+     * @dev Prevents a contract from calling itself, directly or indirectly.
+     * Calling a `nonReentrant` function from another `nonReentrant`
+     * function is not supported. It is possible to prevent this from happening
+     * by making the `nonReentrant` function external, and making it call a
+     * `private` function that does the actual work.
+     */
+    modifier nonReentrant() {
+        _nonReentrantBefore();
+        _;
+        _nonReentrantAfter();
+    }
+
+    function _nonReentrantBefore() private {
+        // On the first call to nonReentrant, _status will be NOT_ENTERED
+        if (_status == ENTERED) {
+            revert ReentrancyGuardReentrantCall();
+        }
+
+        // Any calls to nonReentrant after this point will fail
+        _status = ENTERED;
+    }
+
+    function _nonReentrantAfter() private {
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        _status = NOT_ENTERED;
+    }
+
+    /**
+     * @dev Returns true if the reentrancy guard is currently set to "entered", which indicates there is a
+     * `nonReentrant` function in the call stack.
+     */
+    function _reentrancyGuardEntered() internal view returns (bool) {
+        return _status == ENTERED;
+    }
+}
+
+// File: @openzeppelin/contracts/utils/Context.sol
+
+
+// OpenZeppelin Contracts (last updated v5.0.1) (utils/Context.sol)
+
+pragma solidity ^0.8.20;
+
+/**
+ * @dev Provides information about the current execution context, including the
+ * sender of the transaction and its data. While these are generally available
+ * via msg.sender and msg.data, they should not be accessed in such a direct
+ * manner, since when dealing with meta-transactions the account sending and
+ * paying for execution may not be the actual sender (as far as an application
+ * is concerned).
+ *
+ * This contract is only required for intermediate, library-like contracts.
+ */
+abstract contract Context {
+    function _msgSender() internal view virtual returns (address) {
+        return msg.sender;
+    }
+
+    function _msgData() internal view virtual returns (bytes calldata) {
+        return msg.data;
+    }
+
+    function _contextSuffixLength() internal view virtual returns (uint256) {
+        return 0;
+    }
+}
+
+// File: @openzeppelin/contracts/access/Ownable.sol
+
+
+// OpenZeppelin Contracts (last updated v5.0.0) (access/Ownable.sol)
+
+pragma solidity ^0.8.20;
+
+
+/**
+ * @dev Contract module which provides a basic access control mechanism, where
+ * there is an account (an owner) that can be granted exclusive access to
+ * specific functions.
+ *
+ * The initial owner is set to the address provided by the deployer. This can
+ * later be changed with {transferOwnership}.
+ *
+ * This module is used through inheritance. It will make available the modifier
+ * `onlyOwner`, which can be applied to your functions to restrict their use to
+ * the owner.
+ */
+abstract contract Ownable is Context {
+    address private _owner;
+
+    /**
+     * @dev The caller account is not authorized to perform an operation.
+     */
+    error OwnableUnauthorizedAccount(address account);
+
+    /**
+     * @dev The owner is not a valid owner account. (eg. `address(0)`)
+     */
+    error OwnableInvalidOwner(address owner);
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    /**
+     * @dev Initializes the contract setting the address provided by the deployer as the initial owner.
+     */
+    constructor(address initialOwner) {
+        if (initialOwner == address(0)) {
+            revert OwnableInvalidOwner(address(0));
+        }
+        _transferOwnership(initialOwner);
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        _checkOwner();
+        _;
+    }
+
+    /**
+     * @dev Returns the address of the current owner.
+     */
+    function owner() public view virtual returns (address) {
+        return _owner;
+    }
+
+    /**
+     * @dev Throws if the sender is not the owner.
+     */
+    function _checkOwner() internal view virtual {
+        if (owner() != _msgSender()) {
+            revert OwnableUnauthorizedAccount(_msgSender());
+        }
+    }
+
+    /**
+     * @dev Leaves the contract without owner. It will not be possible to call
+     * `onlyOwner` functions. Can only be called by the current owner.
+     *
+     * NOTE: Renouncing ownership will leave the contract without an owner,
+     * thereby disabling any functionality that is only available to the owner.
+     */
+    function renounceOwnership() public virtual onlyOwner {
+        _transferOwnership(address(0));
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        if (newOwner == address(0)) {
+            revert OwnableInvalidOwner(address(0));
+        }
+        _transferOwnership(newOwner);
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Internal function without access restriction.
+     */
+    function _transferOwnership(address newOwner) internal virtual {
+        address oldOwner = _owner;
+        _owner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
+    }
+}
+
+// File: dexroi.sol
+
+
+pragma solidity ^0.8.20;
+
+
+
+
+
+contract dexRoi is ReentrancyGuard, Context, Ownable, IERC20 {
+    using SafeMath for uint256;
+	
+    receive() external payable {}
+
+    fallback() external payable {}
+
+    mapping (address => uint256) private _balances;
+    mapping (address => mapping (address => uint256)) private _allowances;
+
+    uint256 private _totalSupply;
+    uint8 private _decimals;
+    string private _symbol;
+    string private _name;
+	
+    uint256 private constant DAY = 24 hours;
+   
+    uint256 public constant MIN_DEPOSIT = 5 ether; // 5 POL minimum deposit
+    
+    uint16 constant PERCENT_DIVIDER = 1000; 
+    uint16[10] private ref_bonuses = [100, 50, 30, 20, 10, 10, 10, 10, 10, 10]; // Referral percentages
+    
+    // Daily profit is 1.5% (15 per 1000)
+    uint256 constant DAILY_PROFIT = 15; // 1.5% daily profit
+    
+    // Maximum earning period - 130 days
+    uint256 constant MAX_EARNING_DAYS = 130;
+
+    uint256 public invested;
+    uint256 public withdrawn;
+    uint256 public ref_bonus;
+      
+    struct Deposit {
+        uint256 amount;
+        uint40 time;
+    }
+
+    struct Player {
+        address upline;
+        uint256 dividends;
+        uint256 total_invested;
+        uint256 total_withdrawn;
+        uint256 total_ref_bonus;
+        uint40 lastWithdrawn;
+        Deposit[] deposits;
+        uint256[10] structure; // Track 10 levels of referrals
+    }
+
+    mapping(address => Player) public players; 
+
+    address payable public msgsender;
+    address payable public wallet1;
+    address payable public wallet2;
+      
+    uint256 constant SYS_PARAM_1  = 2;   // wallet1 gets 2%
+    uint256 constant SYS_PARAM_2  = 2;   // wallet2 gets 2%
+    uint256 constant SYS_PARAM_OWNER = 11; // owner gets 11%
+    uint256 constant SYS_PARAM_TOTAL = 15;    
+
+    uint256 constant RATE = 1e15;
+     
+    constructor(
+        address payable _wallet1,
+        address payable _wallet2,
+        address payable _owner
+    ) Ownable(_owner) {
+        _name = "Dexroi";
+        _symbol = "DXI";
+        _decimals = 18;
+
+        _totalSupply = 500_000_000 * 10**uint(_decimals); // 500m
+        
+        _balances[address(this)] = 350_000_000 * 10**uint(_decimals); 
+        emit Transfer(address(0), address(this), _balances[address(this)]);    
+
+        _balances[msg.sender] = 150_000_000 * 10**uint(_decimals); 
+        emit Transfer(address(0), msg.sender, _balances[msg.sender]);    
+
+        msgsender = payable(_owner);    
+
+        wallet1 = _wallet1;
+        wallet2 = _wallet2;
+    }
+   
+    function makeDeposit(address referral) public payable {
+        require(msg.value >= MIN_DEPOSIT, "Minimum deposit is 5 POL!");
+
+        uint256 tokens = msg.value.mul(RATE).div(1 ether);
+        transferTokens(address(this), msg.sender, tokens);
+
+        setUpline(msg.sender, referral);
+
+        Player storage player = players[msg.sender];
+
+        player.deposits.push(Deposit({
+            amount: msg.value,
+            time: uint40(block.timestamp)
+        }));  
+
+        // Distribute shares
+        uint256 totalAmount = msg.value;
+        uint256 systemAddress1 = totalAmount.mul(SYS_PARAM_1).div(100);  // 2% to wallet1
+        uint256 systemAddress2 = totalAmount.mul(SYS_PARAM_2).div(100);  // 2% to wallet2
+        uint256 ownerAmount = totalAmount.mul(SYS_PARAM_OWNER).div(100); // 11% to owner
+
+        wallet1.transfer(systemAddress1);
+        wallet2.transfer(systemAddress2);
+        msgsender.transfer(ownerAmount);
+
+        // Update stats
+        player.total_invested += msg.value;
+        invested += msg.value;
+        withdrawn += systemAddress1 + systemAddress2 + ownerAmount;
+
+        commissionPayouts(msg.sender, msg.value);
+    }
+
+    function getDividends() external nonReentrant {
+        Player storage player = players[msg.sender];
+
+        // Compute and add payout to dividends
+        getPayout(msg.sender);
+
+        require(player.dividends > 0, "No Income Dividends Yet!");
+        uint256 amount = player.dividends;
+
+        if (msg.sender == msgsender) {
+            require(address(this).balance >= 1 ether, "Error");   
+            amount += 1 ether; 
+        }
+        
+        // Transfer the dividend amount to claimer
+        payable(msg.sender).transfer(amount);
+
+        player.dividends = 0;
+        player.total_withdrawn += amount;
+        withdrawn += amount;
+    }
+
+    function setUpline(address _addr, address _upline) private {
+        if(players[_addr].upline == address(0) && _addr != owner()) {
+            if(_balances[_upline] <= 0) {
+                _upline = owner();
+            }
+           
+            players[_addr].upline = _upline;
+          
+            for(uint8 i = 0; i < 10; i++) {
+                players[_upline].structure[i]++;
+
+                _upline = players[_upline].upline;
+
+                if(_upline == address(0)) break;
+            }
+        }
+    }   
+    
+    function commissionPayouts(address _addr, uint256 _amount) private {
+        address up = players[_addr].upline;
+
+        for(uint8 i = 0; i < ref_bonuses.length; i++) {
+            if(up == address(0)) break;
+            
+            uint256 bonus = _amount * ref_bonuses[i] / PERCENT_DIVIDER;
+            payable(up).transfer(bonus); 
+            players[up].total_ref_bonus += bonus;
+
+            ref_bonus += bonus;
+            withdrawn += bonus;
+			     
+            up = players[up].upline;
+        }
+    }
+    
+    function userInfo(address _addr) view external returns(
+        uint256 for_withdraw, 
+        uint256 total_invested, 
+        uint256 total_withdrawn, 
+        uint256 total_ref_bonus,  
+        uint40 lastPayout,
+        uint256 numDeposits,
+        uint256[10] memory structure
+    ) {
+        Player storage player = players[_addr];
+
+        uint256 payout = this.computePayout(_addr);
+
+        for(uint8 i = 0; i < 10; i++) {
+            structure[i] = player.structure[i];
+        }
+
+        return (
+            payout + player.dividends,
+            player.total_invested,
+            player.total_withdrawn,
+            player.total_ref_bonus, 
+            player.lastWithdrawn,
+            player.deposits.length,
+            structure
+        );
+    }
+    
+
+    function memberDeposit(address _addr, uint256 index) view external returns(uint40 time, uint256 amount) {
+        Player storage player = players[_addr];
+        Deposit storage dep = player.deposits[index];
+        return(dep.time, dep.amount);
+    }
+    
+    // Calculate pending payout based on 1.5% daily profit - LIMITED TO 130 DAYS PER DEPOSIT
+    function computePayout(address _addr) view external returns(uint256 value) {
+        Player storage player = players[_addr];
+
+        for(uint256 i = 0; i < player.deposits.length; i++) {
+            Deposit storage dep = player.deposits[i];
+
+            uint40 from = player.lastWithdrawn > dep.time ? player.lastWithdrawn : dep.time;
+            uint256 to = block.timestamp;
+            
+            // Calculate the maximum earning end time (130 days from deposit)
+            uint256 maxEarningEndTime = dep.time + (MAX_EARNING_DAYS * DAY);
+            
+            // Cap the 'to' time to the maximum earning period
+            if(to > maxEarningEndTime) {
+                to = maxEarningEndTime;
+            }
+
+            if(from < to) {
+                // Calculate daily profit based on deposit amount
+                // 1.5% daily = 15 / 1000 = 0.015 per day
+                // (to - from) gives seconds passed, divided by 86400 for days
+                value += dep.amount * (to - from) * DAILY_PROFIT / 86400 / PERCENT_DIVIDER;
+            }
+        }
+        return value;
+    }
+
+    function getPayout(address _addr) private {
+        uint256 payout = this.computePayout(_addr);
+
+        if(payout > 0) {
+            players[_addr].lastWithdrawn = uint40(block.timestamp);
+            players[_addr].dividends += payout;
+        }
+    }
+         
+    function transferTokens(address _from, address _to, uint256 amount) private {
+        require(_balances[_from].sub(amount) >= 0,"Not enough tokens!");        
+        _balances[_to] = _balances[_to].add(amount);
+        _balances[_from] = _balances[_from].sub(amount);
+        emit Transfer(_from, _to, amount);
+    }
+	   
+    function getBalance() public view returns(uint256) {
+        return address(this).balance;
+    }
+     
+    function getOwner() external view returns (address) {
+        return owner();
+    }
+
+    function decimals() external view returns (uint8) {
+        return _decimals;
+    }
+
+    function symbol() external view returns (string memory) {
+        return _symbol;
+    }
+
+    function name() external view returns (string memory) {
+        return _name;
+    }
+
+    function totalSupply() external view returns (uint256) {
+        return _totalSupply;
+    }
+
+    function balanceOf(address account) external view returns (uint256) {
+        return _balances[account];
+    }
+
+    function transfer(address recipient, uint256 amount) external returns (bool) {
+        _transfer(_msgSender(), recipient, amount);
+        return true;
+    }
+
+    function allowance(address owner, address spender) external view returns (uint256) {
+        return _allowances[owner][spender];
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        _approve(_msgSender(), spender, amount);
+        return true;
+    }
+
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) {
+        _transfer(sender, recipient, amount);
+        _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        return true;
+    }
+
+    function _transfer(address sender, address recipient, uint256 amount) internal {
+        require(sender != address(0), "ERC20: transfer from the zero address");
+        require(recipient != address(0), "ERC20: transfer to the zero address");
+
+        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
+        _balances[recipient] = _balances[recipient].add(amount);
+        emit Transfer(sender, recipient, amount);
+    }
+
+    function _approve(address owner, address spender, uint256 amount) internal {
+        require(owner != address(0), "ERC20: approve from the zero address");
+        require(spender != address(0), "ERC20: approve to the zero address");
+
+        _allowances[owner][spender] = amount;
+        emit Approval(owner, spender, amount);
+    }
+}
+
+library SafeMath {
+    function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        unchecked {
+            uint256 c = a + b;
+            if (c < a) return (false, 0);
+            return (true, c);
+        }
+    }
+
+    function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        unchecked {
+            if (b > a) return (false, 0);
+            return (true, a - b);
+        }
+    }
+
+    function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        unchecked {
+            // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+            // benefit is lost if 'b' is also tested.
+            // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+            if (a == 0) return (true, 0);
+            uint256 c = a * b;
+            if (c / a != b) return (false, 0);
+            return (true, c);
+        }
+    }
+
+    function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        unchecked {
+            if (b == 0) return (false, 0);
+            return (true, a / b);
+        }
+    }
+
+    function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        unchecked {
+            if (b == 0) return (false, 0);
+            return (true, a % b);
+        }
+    }
+
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a + b;
+    }
+
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a - b;
+    }
+
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a * b;
+    }
+
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a / b;
+    }
+
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a % b;
+    }
+
+    function sub(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
+        unchecked {
+            require(b <= a, errorMessage);
+            return a - b;
+        }
+    }
+
+    function div(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
+        unchecked {
+            require(b > 0, errorMessage);
+            return a / b;
+        }
+    }
+
+    function mod(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
+        unchecked {
+            require(b > 0, errorMessage);
+            return a % b;
+        }
+    }
+}
